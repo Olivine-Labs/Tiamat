@@ -20,12 +20,36 @@ namespace Vocale
             _commands.Add(commandName, aMethod);
         }
 
+        public void Register(Type type)
+        {
+            MethodInfo[] methods = type.GetMethods(BindingFlags.Public | BindingFlags.Static);
+            foreach (MethodInfo rawMethod in methods)
+            {
+                ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
+                aMethod.Method = rawMethod;
+                _commands.Add(rawMethod.Name, aMethod);
+            }
+        }
+
         public void Register(String commandName, Object type)
         {
             ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
             aMethod.Method = type.GetType().GetMethod(commandName);
             aMethod.Context = type;
             _commands.Add(commandName, aMethod);
+        }
+
+        public void Register(Object type)
+        {
+            MethodInfo[] methods = type.GetType().GetMethods(BindingFlags.Public);
+            foreach (MethodInfo rawMethod in methods)
+            {
+                ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
+                if(!rawMethod.IsStatic)
+                    aMethod.Context = type;
+                aMethod.Method = rawMethod;
+                _commands.Add(rawMethod.Name, aMethod);
+            }
         }
 
         public Boolean Exists(String commandName)
