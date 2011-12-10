@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Constants", "Constants\Cons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Startup", "Startup\Startup.csproj", "{E7A8901C-6456-499B-95A2-887201985E1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vocale", "Vocale\Vocale.csproj", "{3EA51627-F13E-42F9-9AAE-D301CA934DAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,16 @@ Global
 		{E7A8901C-6456-499B-95A2-887201985E1E}.Release|Mixed Platforms.Build.0 = Release|x86
 		{E7A8901C-6456-499B-95A2-887201985E1E}.Release|x86.ActiveCfg = Release|x86
 		{E7A8901C-6456-499B-95A2-887201985E1E}.Release|x86.Build.0 = Release|x86
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3EA51627-F13E-42F9-9AAE-D301CA934DAA}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
