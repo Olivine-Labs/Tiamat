@@ -5,6 +5,7 @@ using System.Text;
 using System.Reflection;
 using Vocale.Classes;
 using Vocale.Classes.Exceptions;
+using System.Threading;
 
 namespace Vocale
 {
@@ -21,11 +22,26 @@ namespace Vocale
 
         public void Register(String commandName, Object type)
         {
-
             ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
             aMethod.Method = type.GetType().GetMethod(commandName);
             aMethod.Context = type;
             _commands.Add(commandName, aMethod);
+        }
+
+        public Boolean Exists(String commandName)
+        {
+            ExtendedMethodInfo trash;
+            return _commands.TryGetValue(commandName, out trash);
+        }
+
+        public void Remove(String commandName)
+        {
+            _commands.Remove(commandName);
+        }
+
+        public void RemoveAll()
+        {
+            _commands.Clear();
         }
 
         public Object Execute(String commandName, params Object[] parameters)
