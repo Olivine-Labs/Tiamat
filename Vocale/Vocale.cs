@@ -31,7 +31,7 @@ namespace Vocale
         public Object Execute(String commandName, params Object[] parameters)
         {
             Object result = null;
-            ExtendedMethodInfo aMethod;
+            ExtendedMethodInfo aMethod = null;
             _commands.TryGetValue(commandName, out aMethod);
             if (aMethod != null)
             {
