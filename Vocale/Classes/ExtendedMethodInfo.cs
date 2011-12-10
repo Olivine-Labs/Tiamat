@@ -8,7 +8,9 @@ namespace Vocale.Classes
 {
     class ExtendedMethodInfo
     {
-        public MethodInfo Method = null;
+        public MethodInfo MethodInfo = null;
         public Object Context = null;
+        public delegate Object MethodType(params Object[] parameters);
+        public MethodType Method = null;
     }
 }

@@ -16,7 +16,8 @@ namespace Vocale
         public void Register(String commandName, Type type)
         {
             ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
-            aMethod.Method = type.GetMethod(commandName);
+            aMethod.MethodInfo = type.GetMethod(commandName);
+            aMethod.Method = (ExtendedMethodInfo.MethodType)Delegate.CreateDelegate(typeof(ExtendedMethodInfo.MethodType), aMethod.MethodInfo);
             _commands.Add(commandName, aMethod);
         }
 
@@ -26,7 +27,8 @@ namespace Vocale
             foreach (MethodInfo rawMethod in methods)
             {
                 ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
-                aMethod.Method = rawMethod;
+                aMethod.MethodInfo = rawMethod;
+                aMethod.Method = (ExtendedMethodInfo.MethodType)Delegate.CreateDelegate(typeof(ExtendedMethodInfo.MethodType), aMethod.MethodInfo);
                 _commands.Add(rawMethod.Name, aMethod);
             }
         }
@@ -34,21 +36,26 @@ namespace Vocale
         public void Register(String commandName, Object type)
         {
             ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
-            aMethod.Method = type.GetType().GetMethod(commandName);
+            aMethod.MethodInfo = type.GetType().GetMethod(commandName);
             aMethod.Context = type;
+            aMethod.Method = (ExtendedMethodInfo.MethodType)Delegate.CreateDelegate(typeof(ExtendedMethodInfo.MethodType), aMethod.Context, aMethod.MethodInfo);
             _commands.Add(commandName, aMethod);
         }
 
         public void Register(Object type)
         {
-            MethodInfo[] methods = type.GetType().GetMethods(BindingFlags.Public);
+            MethodInfo[] methods = type.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
             foreach (MethodInfo rawMethod in methods)
             {
-                ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
-                if(!rawMethod.IsStatic)
-                    aMethod.Context = type;
-                aMethod.Method = rawMethod;
-                _commands.Add(rawMethod.Name, aMethod);
+                if (rawMethod.ReturnType == typeof(Object))
+                {
+                    ExtendedMethodInfo aMethod = new ExtendedMethodInfo();
+                    if (!rawMethod.IsStatic)
+                        aMethod.Context = type;
+                    aMethod.MethodInfo = rawMethod;
+                    aMethod.Method = (ExtendedMethodInfo.MethodType)Delegate.CreateDelegate(typeof(ExtendedMethodInfo.MethodType), aMethod.Context, aMethod.MethodInfo);
+                    _commands.Add(rawMethod.Name, aMethod);
+                }
             }
         }
 
@@ -77,7 +84,7 @@ namespace Vocale
             {
                 try
                 {
-                    result = aMethod.Method.Invoke(aMethod.Context, parameters);
+                    result = aMethod.Method(parameters);
                 }
                 catch (TargetParameterCountException)
                 {
