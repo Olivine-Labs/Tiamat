@@ -42,8 +42,8 @@
   <ItemGroup>
     <Compile Include="Classes\Exceptions\VocaleException.cs" />
     <Compile Include="Classes\ExtendedMethodInfo.cs" />
-    <Compile Include="Vocale.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Vocale.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

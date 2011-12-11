@@ -57,12 +57,12 @@
     <Compile Include="Classes\Server.cs" />
     <Compile Include="Classes\Client.cs" />
     <Compile Include="Classes\Response.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Classes\Request.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Router.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Constants\Common.csproj">
+    <ProjectReference Include="..\Common\Common.csproj">
       <Project>{C322EA1D-E3DB-4BBA-94F7-2EBD0362C87F}</Project>
       <Name>Common</Name>
     </ProjectReference>
