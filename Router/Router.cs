@@ -8,7 +8,7 @@ using Alchemy.Server.Classes;
 using Router.Classes;
 using System.Net;
 using Newtonsoft.Json;
-using Constants;
+using Common;
 
 namespace Router
 {
@@ -17,7 +17,7 @@ namespace Router
         private Alchemy.Server.WSServer _alchemy = null;
         private ConcurrentDictionary<Guid, Client> _clients = new ConcurrentDictionary<Guid, Client>();
         private ConcurrentDictionary<String, Server> _servers = new ConcurrentDictionary<String, Server>();
-        
+
         public void Start()
         {
             if (_alchemy == null)
@@ -47,30 +47,27 @@ namespace Router
             //TODO :: Logging?
             Client client = context.Data as Client;
             Request[] requests = client.GetRequests();
-
-            if (requests.Length > 0)
+            if (requests == null)
+            {
+                client.Error(null, Message.REQUEST_MALFORMED);
+            }
+            else
+            if(requests.Length > 0)
             {
                 foreach (Request request in requests)
                 {
                     request.From = client;
 
-                    if (request.InputType != null)
-                        client.InputType = (ContentType)request.InputType;
-
-                    //This tells us if we need to try to forward this request or not.
-                    if (String.IsNullOrEmpty(request.Path))
+                    if (tryForward(request))
                     {
-                        if (tryForward(request))
-                        {
-                            //Only requests that are forwarded need to be tracked.
-                            client.Requests.TryAdd(request.Id, request);
-                        }
+                        //Only requests that are forwarded need to be tracked.
+                        client.Requests.TryAdd(request.Id, request);
+                    }
+                    else
+                    {
+                        client.Error(request, Message.SERVER_UNAVAILABLE);
                     }
                 }
-            }
-            else
-            {
-                client.Error(null, Message.REQUEST_MALFORMED);
             }
         }
 
@@ -99,7 +96,7 @@ namespace Router
             //TODO :: Logging?
             if (context.Data != null)
             {
-                Client client = (Client)context.Data;
+                Client client = context.Data as Client;
                 _clients.TryRemove(client.Id, out client);
             }
         }
@@ -107,32 +104,35 @@ namespace Router
         private Server tryFindServer(String path)
         {
             Server server = null;
-            if (!_servers.TryGetValue(path, out server))
+            if (_servers.TryGetValue(path, out server))
             {
                 //TODO:: find and connect to server for path, implement wait and retry if necessary
             }
+            else
+            {
+                //TODO:: Try to find server for path in database(maybe it hasn't propagated to here yet?). Connect and add to list if necessary.
+                //TODO:: Make sure to add a special lock here(by request path) to prevent the same server from being added/connected to twice.
+            }
+
             return server;
         }
 
-        private bool tryForward(Request request)
+        private Boolean tryForward(Request request)
         {
             String path = string.Empty;
             if (request.PathArray.Length > 0)
                 path = request.PathArray[0];
 
             Server server = tryFindServer(path);
-
-            //TODO:: implement retries on failed messages(limit number of retries) in both cases here.
             if (server != null)
             {
-                server.Forward(request);
-                return true;
+                if(!server.Forward(request))
+                {
+                    //TODO:: implement retries on failed messages(limit number of retries) 
+                }
+                return true;//return true because we don't want to send an error in this case.
             }
-            else
-            {
-                request.Error(Message.SERVER_UNAVAILABLE);
-                return false;
-            }
+            return false;
         }
     }
 }

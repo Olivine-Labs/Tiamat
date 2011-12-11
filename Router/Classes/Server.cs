@@ -10,9 +10,10 @@ namespace Router.Classes
         public  Guid    Id      = Guid.NewGuid();
         public  String  Path    = "";
 
-        public void Forward(Request request)
+        public Boolean Forward(Request request)
         {
             //TODO - forward request on to the other server
+            return false;
         }
     }
 }

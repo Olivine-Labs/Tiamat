@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Constants;
+using Common;
 
 namespace Router.Classes
 {
@@ -17,8 +17,7 @@ namespace Router.Classes
         public Client From = null;
         public Server To = null;
 
-        public ContentType? OutputType = null;
-        public ContentType? InputType = null;
+        public ContentType? ContentType = null;
 
         public String Path
         {

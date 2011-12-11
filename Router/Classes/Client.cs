@@ -5,7 +5,7 @@ using System.Text;
 using System.Net;
 using Alchemy.Server.Classes;
 using System.Collections.Concurrent;
-using Constants;
+using Common;
 using Newtonsoft.Json;
 using System.IO;
 
@@ -19,12 +19,11 @@ namespace Router.Classes
             DefaultValueHandling = DefaultValueHandling.Ignore
         };
 
-        public ContentType OutputType   = ContentType.JSON;
-        public ContentType InputType    = ContentType.JSON;
-
         public Guid Id = Guid.Empty;
         public ConcurrentDictionary<Guid, Request> Requests = new ConcurrentDictionary<Guid, Request>();
         public UserContext Context = null;
+
+        public ContentType ContentType = ContentType.JSON;
 
         public void Error(Request request, Message message)
         {
@@ -35,31 +34,44 @@ namespace Router.Classes
 
         public void Respond(Request request, object data, Response response = null)
         {
-            if(response == null)
-                response = new Response();
-            ContentType outputType = OutputType;
-            if (request != null)
+            try
             {
-                response.Path = request.Path;
-                if (request.OutputType != null)
-                    outputType = (ContentType)request.OutputType;
+                if (response == null)
+                    response = new Response();
+
+                if (request != null)
+                {
+                    response.Path = request.Path;
+                    if (request.ContentType == null)
+                    {
+                        String contentType = request.From.Context.Header["Content-Type"];
+                        if (Enum.IsDefined(typeof(ContentType), contentType))
+                        {
+                            request.ContentType = (ContentType)Enum.Parse(typeof(ContentType), contentType, true);
+                        }
+                    }
+                }
+                else
+                {
+                    request = new Request();
+                }
+                response.Request = request;
+                response.Data = data;
+                Context.Send(serializeResponse(response));
             }
-            response.Data = data;
-            Context.Send(serializeResponse(response, outputType));
+            finally//Make sure we clean up the request object regardless of whether the response gets sent or not.
+            {
+                Requests.TryRemove(request.Id, out request);
+            }
         }
 
-        private string serializeResponse(Response response, ContentType? outputType = null)
+        private string serializeResponse(Response response)
         {
-            if (outputType == null)
-                outputType = OutputType;
             //TODO handle multiple input/output types
-            response.Time = convertToUnixTimestamp(DateTime.Now);
+            response.Time = Common.Functions.ConvertToUnixTimestamp(DateTime.Now);
             String responseString = string.Empty;
-            switch (outputType)
+            switch (response.Request.ContentType)
             {
-                case ContentType.JSON:
-                    responseString = JsonConvert.SerializeObject(response, Formatting.None, _serializerSettings);
-                    break;
                 case ContentType.XML:
                     System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(response.GetType());
                     using (StringWriter writer = new StringWriter())
@@ -67,6 +79,10 @@ namespace Router.Classes
                         x.Serialize(writer, response);
                         responseString = writer.ToString();
                     }
+                    break;
+                case ContentType.JSON:
+                default:
+                    responseString = JsonConvert.SerializeObject(response, Formatting.None, _serializerSettings);
                     break;
             }
             return responseString;
@@ -78,11 +94,8 @@ namespace Router.Classes
             Request[] requests = null;
             try
             {
-                switch (InputType)
+                switch (ContentType)
                 {
-                    case ContentType.JSON:
-                        requests = JsonConvert.DeserializeObject<Request[]>(Context.DataFrame.ToString());
-                        break;
                     case ContentType.XML:
                         System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(requests.GetType());
                         using (StringReader reader = new StringReader(Context.DataFrame.ToString()))
@@ -90,25 +103,19 @@ namespace Router.Classes
                             requests = x.Deserialize(reader) as Request[];
                         }
                         break;
+                    case ContentType.JSON:
                     default:
-                        throw new Exception("Invalid Output Type");
+                        requests = JsonConvert.DeserializeObject<Request[]>(Context.DataFrame.ToString());
+                        break;
                 }
                 
             }
             catch (Exception)
             {
                 //Ignore, we don't care why the request is malformed.
+                //TODO:: Logging?
             }
-            if (requests == null)
-                requests = new Request[0];
             return requests;
-        }
-
-        private static double convertToUnixTimestamp(DateTime date)
-        {
-            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
-            TimeSpan diff = date - origin;
-            return diff.TotalSeconds;
         }
     }
 }
