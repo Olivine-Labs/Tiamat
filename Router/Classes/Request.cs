@@ -1,28 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Common;
 
 namespace Router.Classes
 {
-    class Request
+    internal class Request
     {
+        public ContentType? ContentType;
+        public String Data = "";
+
+        public Client From;
         public Guid Id = Guid.NewGuid();
+        public Server To;
         private String _path = "";
         private String[] _pathArray = new String[0];
 
-        public String Data = "";
-
-        public Client From = null;
-        public Server To = null;
-
-        public ContentType? ContentType = null;
-
         public String Path
         {
-            get
-            { return _path; }
+            get { return _path; }
             set
             {
                 _path = value;
@@ -32,8 +26,7 @@ namespace Router.Classes
 
         public String[] PathArray
         {
-            get
-            { return _pathArray; }
+            get { return _pathArray; }
             set
             {
                 _pathArray = value;

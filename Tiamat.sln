@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Router", "Router\Router.csproj", "{BEFFBADB-8ADE-478F-89FE-D9AB7C854977}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{C322EA1D-E3DB-4BBA-94F7-2EBD0362C87F}"

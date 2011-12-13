@@ -1,34 +1,32 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Net;
 using Alchemy.Server;
 using Alchemy.Server.Classes;
-using Router.Classes;
-using System.Net;
-using Newtonsoft.Json;
 using Common;
+using Router.Classes;
 
 namespace Router
 {
     public class Router
     {
-        private Alchemy.Server.WSServer _alchemy = null;
-        private ConcurrentDictionary<Guid, Client> _clients = new ConcurrentDictionary<Guid, Client>();
-        private ConcurrentDictionary<String, Server> _servers = new ConcurrentDictionary<String, Server>();
+        private readonly ConcurrentDictionary<Guid, Client> _clients = new ConcurrentDictionary<Guid, Client>();
+        private readonly ConcurrentDictionary<String, Server> _servers = new ConcurrentDictionary<String, Server>();
+        private WSServer _alchemy;
 
         public void Start()
         {
             if (_alchemy == null)
             {
-                _alchemy = new Alchemy.Server.WSServer(81, IPAddress.Any);
-                _alchemy.DefaultOnReceive = new OnEventDelegate(onReceive);
-                _alchemy.DefaultOnSend = new OnEventDelegate(onSend);
-                _alchemy.DefaultOnConnect = new OnEventDelegate(onConnect);
-                _alchemy.DefaultOnConnected = new OnEventDelegate(onConnected);
-                _alchemy.DefaultOnDisconnect = new OnEventDelegate(onDisconnect);
-                _alchemy.TimeOut = new TimeSpan(0, 5, 0);
+                _alchemy = new WSServer(81, IPAddress.Any)
+                {
+                    DefaultOnReceive = OnReceive,
+                    DefaultOnSend = OnSend,
+                    DefaultOnConnect = OnConnect,
+                    DefaultOnConnected = OnConnected,
+                    DefaultOnDisconnect = OnDisconnect,
+                    TimeOut = new TimeSpan(0, 5, 0)
+                };
                 _alchemy.Start();
             }
         }
@@ -42,95 +40,113 @@ namespace Router
             }
         }
 
-        private void onReceive(UserContext context)
+        private void OnReceive(UserContext context)
         {
             //TODO :: Logging?
-            Client client = context.Data as Client;
-            Request[] requests = client.GetRequests();
-            if (requests == null)
+            var client = context.Data as Client;
+            if (client != null)
             {
-                client.Error(null, Message.REQUEST_MALFORMED);
-            }
-            else
-            if(requests.Length > 0)
-            {
-                foreach (Request request in requests)
+                Request[] requests = client.GetRequests();
+                if (requests != null)
                 {
-                    request.From = client;
+                    if (requests.Length > 0)
+                    {
+                        foreach (Request request in requests)
+                        {
+                            request.From = client;
 
-                    if (tryForward(request))
-                    {
-                        //Only requests that are forwarded need to be tracked.
-                        client.Requests.TryAdd(request.Id, request);
-                    }
-                    else
-                    {
-                        client.Error(request, Message.SERVER_UNAVAILABLE);
+                            if (TryForward(request))
+                            {
+                                //Only requests that are forwarded need to be tracked.
+                                client.Requests.TryAdd(request.Id, request);
+                            }
+                            else
+                            {
+                                client.Error(request, Message.ServerUnavailable);
+                            }
+                        }
                     }
                 }
+                else
+                {
+                    client.Error(null, Message.RequestMalformed);
+                }
+            }
+            else
+            {
+                context.Send(String.Empty, true); //Close
             }
         }
 
-        private void onSend(UserContext context)
+        private void OnSend(UserContext context)
         {
             //TODO :: Logging?
         }
 
-        private void onConnect(UserContext context)
+        private void OnConnect(UserContext context)
         {
             //TODO :: Logging?
         }
 
-        private void onConnected(UserContext context)
+        private void OnConnected(UserContext context)
         {
             //TODO :: Logging?
-            Client client = new Client();
-            client.Id = Guid.NewGuid();
-            client.Context = context;
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                Context = context
+            };
             context.Data = client;
             _clients.TryAdd(client.Id, client);
         }
 
-        private void onDisconnect(UserContext context)
+        private void OnDisconnect(UserContext context)
         {
             //TODO :: Logging?
             if (context.Data != null)
             {
-                Client client = context.Data as Client;
-                _clients.TryRemove(client.Id, out client);
+                var client = context.Data as Client;
+                if (client != null)
+                {
+                    _clients.TryRemove(client.Id, out client);
+                }
             }
         }
 
-        private Server tryFindServer(String path)
+        private Server TryFindServer(String path)
         {
-            Server server = null;
+            Server server;
             if (_servers.TryGetValue(path, out server))
             {
                 //TODO:: find and connect to server for path, implement wait and retry if necessary
             }
+                // ReSharper disable RedundantIfElseBlock
             else
             {
                 //TODO:: Try to find server for path in database(maybe it hasn't propagated to here yet?). Connect and add to list if necessary.
                 //TODO:: Make sure to add a special lock here(by request path) to prevent the same server from being added/connected to twice.
             }
+            // ReSharper restore RedundantIfElseBlock
 
             return server;
         }
 
-        private Boolean tryForward(Request request)
+        private Boolean TryForward(Request request)
         {
             String path = string.Empty;
             if (request.PathArray.Length > 0)
-                path = request.PathArray[0];
-
-            Server server = tryFindServer(path);
-            if (server != null)
             {
-                if(!server.Forward(request))
+                path = request.PathArray[0];
+            }
+
+            request.To = TryFindServer(path);
+            if (request.To != null)
+            {
+                if (!request.To.Forward(request))
                 {
                     //TODO:: implement retries on failed messages(limit number of retries) 
                 }
-                return true;//return true because we don't want to send an error in this case.
+                return true; //return true because we don't want to send an error in this case.
             }
             return false;
         }

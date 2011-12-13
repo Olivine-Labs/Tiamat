@@ -41,16 +41,10 @@
     <Reference Include="Alchemy">
       <HintPath>lib\Alchemy.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=1.3.1.4349, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -65,10 +59,6 @@
     <ProjectReference Include="..\Common\Common.csproj">
       <Project>{C322EA1D-E3DB-4BBA-94F7-2EBD0362C87F}</Project>
       <Name>Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Vocale\Vocale.csproj">
-      <Project>{3EA51627-F13E-42F9-9AAE-D301CA934DAA}</Project>
-      <Name>Vocale</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

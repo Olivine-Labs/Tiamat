@@ -1,15 +1,13 @@
 ﻿using Common;
-using Newtonsoft.Json;
-using System;
 
 namespace Router.Classes
 {
-    class Response
+    internal class Response
     {
-        public Request Request = null;
+        public object Data;
+        public Message? Error;
         public string Path = string.Empty;
-        public object Data = null;
-        public Message? Error = null;
-        public double Time = 0;
+        public Request Request;
+        public double Time;
     }
 }

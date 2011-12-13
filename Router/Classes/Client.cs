@@ -1,88 +1,86 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
-using Alchemy.Server.Classes;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Xml.Serialization;
+using Alchemy.Server.Classes;
 using Common;
 using Newtonsoft.Json;
-using System.IO;
 
 namespace Router.Classes
 {
-    class Client
+    internal class Client
     {
-        private static JsonSerializerSettings _serializerSettings = new JsonSerializerSettings
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore
+            NullValueHandling =
+                NullValueHandling.Ignore,
+            DefaultValueHandling =
+                DefaultValueHandling.Ignore
         };
+
+        public ContentType ContentType = ContentType.Json;
+        public UserContext Context;
 
         public Guid Id = Guid.Empty;
         public ConcurrentDictionary<Guid, Request> Requests = new ConcurrentDictionary<Guid, Request>();
-        public UserContext Context = null;
-
-        public ContentType ContentType = ContentType.JSON;
 
         public void Error(Request request, Message message)
         {
-            Response response = new Response();
-            response.Error = message;
+            var response = new Response {Error = message};
             Respond(request, null, response);
         }
 
         public void Respond(Request request, object data, Response response = null)
         {
+            if (response == null)
+            {
+                response = new Response();
+            }
+            if (request == null)
+            {
+                request = new Request();
+            }
+
             try
             {
-                if (response == null)
-                    response = new Response();
-
-                if (request != null)
+                response.Path = request.Path;
+                if (request.ContentType == null)
                 {
-                    response.Path = request.Path;
-                    if (request.ContentType == null)
+                    String contentType = request.From.Context.Header["Content-Type"];
+                    if (Enum.IsDefined(typeof (ContentType), contentType))
                     {
-                        String contentType = request.From.Context.Header["Content-Type"];
-                        if (Enum.IsDefined(typeof(ContentType), contentType))
-                        {
-                            request.ContentType = (ContentType)Enum.Parse(typeof(ContentType), contentType, true);
-                        }
+                        request.ContentType = (ContentType) Enum.Parse(typeof (ContentType), contentType, true);
                     }
                 }
-                else
-                {
-                    request = new Request();
-                }
+
                 response.Request = request;
                 response.Data = data;
-                Context.Send(serializeResponse(response));
+                Context.Send(SerializeResponse(response));
             }
-            finally//Make sure we clean up the request object regardless of whether the response gets sent or not.
+            finally //Make sure we clean up the request object regardless of whether the response gets sent or not.
             {
                 Requests.TryRemove(request.Id, out request);
             }
         }
 
-        private string serializeResponse(Response response)
+        private string SerializeResponse(Response response)
         {
             //TODO handle multiple input/output types
-            response.Time = Common.Functions.ConvertToUnixTimestamp(DateTime.Now);
-            String responseString = string.Empty;
+            response.Time = Functions.ConvertToUnixTimestamp(DateTime.Now);
+            String responseString;
             switch (response.Request.ContentType)
             {
-                case ContentType.XML:
-                    System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(response.GetType());
-                    using (StringWriter writer = new StringWriter())
+                case ContentType.Xml:
+                    var x = new XmlSerializer(response.GetType());
+                    using (var writer = new StringWriter())
                     {
                         x.Serialize(writer, response);
                         responseString = writer.ToString();
                     }
                     break;
-                case ContentType.JSON:
+                    //case ContentType.Json:
                 default:
-                    responseString = JsonConvert.SerializeObject(response, Formatting.None, _serializerSettings);
+                    responseString = JsonConvert.SerializeObject(response, Formatting.None, SerializerSettings);
                     break;
             }
             return responseString;
@@ -91,30 +89,26 @@ namespace Router.Classes
         public Request[] GetRequests()
         {
             //TODO handle multiple input/output types
-            Request[] requests = null;
-            try
+            Request[] requests;
+
+            switch (ContentType)
             {
-                switch (ContentType)
-                {
-                    case ContentType.XML:
-                        System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer(requests.GetType());
-                        using (StringReader reader = new StringReader(Context.DataFrame.ToString()))
-                        {
-                            requests = x.Deserialize(reader) as Request[];
-                        }
-                        break;
-                    case ContentType.JSON:
-                    default:
-                        requests = JsonConvert.DeserializeObject<Request[]>(Context.DataFrame.ToString());
-                        break;
-                }
-                
+                case ContentType.Xml:
+                    var x = new XmlSerializer(typeof (Request[]));
+                    using (var reader = new StringReader(Context.DataFrame.ToString()))
+                    {
+                        requests = x.Deserialize(reader) as Request[];
+                    }
+                    break;
+                    //case ContentType.Json:
+                default:
+                    requests = JsonConvert.DeserializeObject<Request[]>(Context.DataFrame.ToString());
+                    break;
             }
-            catch (Exception)
-            {
-                //Ignore, we don't care why the request is malformed.
-                //TODO:: Logging?
-            }
+
+            //Ignore, we don't care why the request is malformed.
+            //TODO:: Logging?
+
             return requests;
         }
     }

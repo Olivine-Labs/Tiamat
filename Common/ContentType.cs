@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Common
+﻿namespace Common
 {
     public enum ContentType
     {
-        JSON = 0,
-        XML = 1
+        Json = 0,
+        Xml = 1
     }
 }
