@@ -34,7 +34,7 @@ namespace Vocale
 
         public void Register(String commandName, Object type)
         {
-            var aMethod = new ExtendedMethodInfo {MethodInfo = type.GetType().GetMethod(commandName), Context = type};
+            var aMethod = new ExtendedMethodInfo { MethodInfo = type.GetType().GetMethod(commandName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy), Context = type };
             aMethod.Method =
                 (ExtendedMethodInfo.MethodType)
                 Delegate.CreateDelegate(typeof (ExtendedMethodInfo.MethodType), aMethod.Context, aMethod.MethodInfo);
@@ -44,7 +44,7 @@ namespace Vocale
         public void Register(Object type)
         {
             MethodInfo[] methods =
-                type.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
+                type.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             foreach (MethodInfo rawMethod in methods)
             {
                 if (rawMethod.ReturnType == typeof (Object))
