@@ -107,5 +107,35 @@ namespace Vocale.Tests
             var result = _vocale.Execute("ANonexistantCommand", new object[3]) as String;
             Assert.Null(result);
         }
+
+        [Test]
+        public void Remove()
+        {
+            _vocale.Register(typeof(StaticClass));
+            Assert.True(_vocale.Exists("AStaticCommand"));
+            _vocale.Remove("AStaticCommand");
+            Assert.False(_vocale.Exists("AStaticCommand"));
+        }
+
+        [Test]
+        public void RemoveMultiple()
+        {
+            var dynamicClass = new DynamicClass();
+            _vocale.Register(dynamicClass);
+            Assert.True(_vocale.Exists("AStaticCommand"));
+            Assert.True(_vocale.Exists("ADynamicCommand"));
+            _vocale.Remove("AStaticCommand");
+            Assert.False(_vocale.Exists("AStaticCommand"));
+            _vocale.Remove("ADynamicCommand");
+            Assert.False(_vocale.Exists("ADynamicCommand"));
+        }
+
+        [Test]
+        public void RemoveFail()
+        {
+            _vocale.Register(typeof(StaticClass));
+            Assert.True(_vocale.Exists("AStaticCommand"));
+            _vocale.Remove("ANonexistantCommand");
+        }
     }
 }
