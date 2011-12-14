@@ -7,7 +7,7 @@ namespace Vocale.Tests
     {
         public static Object AStaticCommand(params Object[] parameters)
         {
-            return "4";
+            return "static";
         }
     }
 
@@ -15,7 +15,15 @@ namespace Vocale.Tests
     {
         public Object ADynamicCommand(params Object[] parameters)
         {
-            return "2";
+            return "dynamic";
+        }
+    }
+
+    class FailClass
+    {
+        public static Object AFailCommand()
+        {
+            return "fail";
         }
     }
 
@@ -40,6 +48,7 @@ namespace Vocale.Tests
         public void BindToStatic()
         {
             _vocale.Register(typeof(StaticClass));
+            Assert.True(_vocale.Exists("AStaticCommand"));
         }
 
         [Test]
@@ -47,17 +56,56 @@ namespace Vocale.Tests
         {
             var dynamicClass = new DynamicClass();
             _vocale.Register(dynamicClass);
+            Assert.True(_vocale.Exists("ADynamicCommand"));
+            Assert.True(_vocale.Exists("AStaticCommand"));
         }
 
         [Test]
-        public void Execute()
+        public void Exists()
+        {
+            _vocale.Register(typeof(StaticClass));
+            Assert.True(_vocale.Exists("AStaticCommand"));
+        }
+
+        [Test]
+        public void NotExists()
+        {
+            _vocale.Register(typeof(StaticClass));
+            Assert.False(_vocale.Exists("ANonexistantCommand"));
+        }
+
+        [Test]
+        [ExpectedException(typeof(ArgumentException))]
+        public void BindToFail()
+        {
+            _vocale.Register(typeof(FailClass));
+        }
+
+        [Test]
+        public void ExecuteStatic()
+        {
+            _vocale.Register(typeof(StaticClass));
+            var result = _vocale.Execute("AStaticCommand", new object[3]) as String;
+            Assert.AreEqual("static", result);
+        }
+
+        [Test]
+        public void ExecuteDynamic()
         {
             var dynamicClass = new DynamicClass();
             _vocale.Register(dynamicClass);
             var result = _vocale.Execute("ADynamicCommand", new object[3]) as String;
-            Assert.AreEqual("2", result);
+            Assert.AreEqual("dynamic", result);
             result = _vocale.Execute("AStaticCommand", new object[3]) as String;
-            Assert.AreEqual("4", result);
+            Assert.AreEqual("static", result);
+        }
+
+        [Test]
+        public void ExecuteFail()
+        {
+            _vocale.Register(typeof(StaticClass));
+            var result = _vocale.Execute("ANonexistantCommand", new object[3]) as String;
+            Assert.Null(result);
         }
     }
 }
