@@ -34,7 +34,6 @@
     <Compile Include="Classes\Exceptions\VocaleException.cs" />
     <Compile Include="Classes\ExtendedMethodInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Tests\Main.cs" />
     <Compile Include="Vocale.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -58,7 +58,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -72,11 +72,11 @@
     <Compile Include="Router.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib\Alchemy\Server.csproj">
+    <ProjectReference Include="..\..\lib\Alchemy\Server.csproj">
       <Project>{45486CDE-86A3-4769-952F-E0821BF79493}</Project>
       <Name>Server</Name>
     </ProjectReference>
-    <ProjectReference Include="..\lib\Common\Common.csproj">
+    <ProjectReference Include="..\..\lib\Common\Common.csproj">
       <Project>{C322EA1D-E3DB-4BBA-94F7-2EBD0362C87F}</Project>
       <Name>Common</Name>
     </ProjectReference>

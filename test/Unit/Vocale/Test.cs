@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 
-namespace Vocale.Tests
+namespace Vocale
 {
     class StaticClass
     {
@@ -28,14 +28,14 @@ namespace Vocale.Tests
     }
 
     [TestFixture]
-    public class Main
+    public class Test
     {
         private Vocale _vocale;
 
         [TestFixtureSetUp]
         public void SetUp()
         {
-             _vocale = new Vocale();
+            _vocale = new Vocale();
         }
 
         [TearDown]

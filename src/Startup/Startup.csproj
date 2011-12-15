@@ -76,7 +76,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Router\Router.csproj">
       <Project>{BEFFBADB-8ADE-478F-89FE-D9AB7C854977}</Project>
-      <Name>Router</Name>
+      <Name>Router %28src\Router%29</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
