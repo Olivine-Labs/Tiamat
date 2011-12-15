@@ -1,3 +1,6 @@
 [submodule "lib/Alchemy"]
 	path = lib/Alchemy
 	url = git@github.com:Olivine-Labs/Alchemy-Websockets.git
+[submodule "lib/Vocale"]
+	path = lib/Vocale
+	url = git@github.com:Olivine-Labs/Vocale.git
